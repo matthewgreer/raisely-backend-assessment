@@ -30,6 +30,9 @@ class CurrencyService {
 
   isValidCurrency(currency) {
     console.log("VALIDATING CURRENCY:", currency);
+    if (!currency) {
+      throw new ValidationError("Currency is required");
+    }
 
     if (typeof currency !== "string") {
       throw new ValidationError("Currency must be a string");

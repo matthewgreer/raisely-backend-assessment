@@ -12,6 +12,10 @@ const processDonation = async (donorName, amount, currency, profileId) => {
   let pendingDonationId;
 
   try {
+    // validate the donation
+    await CurrencyService.isValidCurrency(currency);
+    await DonationModel.isValidDonation({ donorName, amount, currency, profileId });
+
     pendingDonationId = await DonationModel.addPendingDonation(donorName, amount, currency, profileId);
 
     const pendingProfileTotalUpdates = [];
