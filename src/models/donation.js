@@ -40,15 +40,9 @@ const addPendingDonation = (donorName, amount, currency, profileId) => {
   const donation = { donorName, amount, currency, profileId };
   console.log('Adding pending donation:', donation)
 
-  try {
-    isValidDonation(donation);
-  } catch (error) {
-    console.log('Error in Donation Model addPendingDonation:', error)
-    throw new ValidationError(error.message);
-  }
-
   donation.id = uuidv4();
   pendingDonations.push(donation);
+  
   return donation.id;
 };
 
@@ -94,6 +88,10 @@ const isValidDonation = (donation) => {
 
   if (typeof amount !== "number") {
     throw new ValidationError("Donation amount must be a number");
+  }
+
+  if (amount <= 0) {
+    throw new ValidationError("Donation amount must be greater than 0");
   }
 
   if (typeof currency !== "string") {
