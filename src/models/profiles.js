@@ -3,7 +3,7 @@
 */
 const { v4: uuidv4 } = require("uuid");
 const { validateProfile } = require("../utils/validators");
-const { ValidationError, NotFoundError } = require("../utils/errors");
+const { dbDelay } = require('../utils/helpers')
 
 /**
  * Fundraising profiles have the following shape:
@@ -34,15 +34,21 @@ let profiles = [
 
 // Technically, I wasn't asked to provide an addProfile endpoint, but it will be useful to have more than two hierarchical profiles, no?
 /**
- * @param {*} profile
+ * @param {string} name
+ * @param {string} parentId
+ * @param {string} currency
  * @returns
  */
-const addProfile = (profile) => {
+const addProfile = async (name, parentId, currency) => {
+  // const profile = { name, parentId, currency };
   // validate profile
-  validateProfile(profile);
+  // validateProfile(profile);
 
-  profiles.push(profile);
-  return profile;
+};
+const getProfiles = async () => {
+  // in a database-backed application, we would make an asynchronous query to fetch profiles. We simulate this with a delay here. We would also handle errors, retries, and possibly pagination depending on the implementation.
+  await dbDelay();
+  return profiles;
 };
 
 const getProfiles = () => profiles;
