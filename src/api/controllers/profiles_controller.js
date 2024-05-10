@@ -6,8 +6,18 @@ const CurrencyService = new (require('../../services/currency_service'));
  * @param {Object} profile
  * @returns
  */
-const addProfile = async (profile) => {
-  const { name, parentId, currency } = profile;
+const createProfile = async (profile) => {
+  const { name, currency, parentId } = profile;
+
+  if (!parentId) {
+    // if no parentId is provided, we need to find the campaign profileId (or should it be mandatory?)
+    try {
+      profile.parentId = ProfilesModel.getCampaignProfileId();
+    } catch (error) {
+      console.log('Error in Profiles Controller createProfile getCampaignProfileId:', error);
+      throw error;
+    }
+  }
 
   try {
     // validate currency before passing it to profile validation
@@ -15,11 +25,11 @@ const addProfile = async (profile) => {
 
     await ProfilesModel.isValidProfile(profile);
   } catch (error) {
-    console.log('Error in Profiles Controller addProfile validation:', error);
+    console.log('Error in Profiles Controller createProfile validation:', error);
     throw error;
   }
 
-  return ProfilesModel.addProfile(name, parentId, currency);
+  return ProfilesModel.createProfile(profile.name, profile.currency, profile.parentId);
 };
 
 /**
@@ -39,4 +49,4 @@ const getProfile = async (profileId) => {
   return ProfilesModel.getProfile(profileId);
 }
 
-module.exports = { addProfile, getProfiles, getProfile };
+module.exports = { createProfile, getProfiles, getProfile };

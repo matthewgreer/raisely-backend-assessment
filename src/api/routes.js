@@ -1,5 +1,5 @@
 const express = require('express');
-const { getProfiles, getProfile } = require('../api/controllers/profiles_controller');
+const { createProfile, getProfiles, getProfile } = require('../api/controllers/profiles_controller');
 const { processDonation, getProfileDonations } = require('../api/controllers/donations_controller');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 
@@ -66,7 +66,35 @@ router.post('/profiles/:profile/donations', async (req, res) => {
 });
 
 // TODO: Add a donation to the campaign profile POST /donations
+router.post('/donations', async (req, res) => {
+  try {
+    const { donorName, amount, currency } = req.body;
+    await processDonation(donorName, amount, currency);
+    res.status(200).send('Donation added');
+  } catch (error) {
+    console.log('Error in Routes POST /donations:', error);
+    if(error instanceof NotFoundError || error instanceof ValidationError) {
+      res.status(error.statusCode).send(error.message);
+    } else {
+      res.status(500).send('Internal server error');
+    }
+  }
+});
 
 // TODO: Add a profile POST /profiles (bonus)
+router.post('/profiles', async (req, res) => {
+  try {
+    const { name, currency, parentId } = req.body;
+    const profile = await createProfile({ name, currency, parentId });
+    res.json(profile);
+  } catch (error) {
+    console.log('Error in Routes POST /profiles:', error);
+    if(error instanceof ValidationError) {
+      res.status(error.statusCode).send(error.message);
+    } else {
+      res.status(500).send('Internal server error');
+    }
+  }
+});
 
 module.exports = router;

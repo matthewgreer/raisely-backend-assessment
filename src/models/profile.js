@@ -57,19 +57,19 @@ let cachedCampaignProfileId = "78afca18-8162-4ed5-9a7b-212b98c9ec87";
 /**
  * Add a new profile
  *
- * Technically, I wasn't asked to provide an addProfile endpoint, but it will be useful to have more than two hierarchical profiles, no?
+ * Technically, I wasn't asked to provide an createProfile endpoint, but it will be useful to have more than two hierarchical profiles, no?
  *
  * @param {string} name
  * @param {string} parentId
  * @param {string} currency
  * @returns {string} The id of the newly created profile
  */
-const addProfile = async (name, parentId, currency) => {
+const createProfile = async (name, currency, parentId) => {
   await dbDelay();
-  const profile = { name, parentId, currency };
+  const profile = { name, currency, parentId };
   profile.id = uuidv4();
   profiles.push(profile);
-  return profile.id;
+  return profile;
 };
 
 /**
@@ -159,7 +159,7 @@ const getProfileAndAncestors = async (profileId) => {
  * @throws {ValidationError} If the profile is invalid
  */
 const isValidProfile = (profile) => {
-  const { name, parentId, currency } = profile;
+  const { name, currency, parentId } = profile;
   console.log("VALIDATING PROFILE:",profile);
 
   if (!name || !parentId || !currency) {
@@ -273,4 +273,4 @@ const rollbackProfileUpdates = async (pendingDonationId) => {
   }
 };
 
-module.exports = { addProfile, getProfiles, getProfile, getCampaignProfileId, isValidProfile, addPendingProfileTotalUpdates, finalizeProfileUpdates, rollbackProfileUpdates, getProfileAndAncestors};
+module.exports = { createProfile, getProfiles, getProfile, getCampaignProfileId, isValidProfile, addPendingProfileTotalUpdates, finalizeProfileUpdates, rollbackProfileUpdates, getProfileAndAncestors};

@@ -211,4 +211,74 @@ describe('POST /profiles/:profile/donations', () => {
   });
 });
 
+describe('POST /donations', () => {
+  test(' should add a donation to the campaign profile', async () => {
+    const res = await request(app)
+      .post('/donations')
+      .send({
+        donorName: 'Fred Flintstone',
+        amount: 1000,
+        currency: 'AUD',
+      });
+    expect(res.statusCode).toEqual(200);
+    expect(res.text).toBe('Donation added');
+  });
 
+  test(' should accurately increase the campaign total when a donation is added', async () => {
+    // Get the initial total for the campaign profile
+    let profile = await request(app).get(`/profiles/${campaignProfileId}`);
+    const initialTotal = profile.body.total;
+
+    // Make a donation
+    const donationAmount = 1000;
+    await request(app)
+      .post('/donations')
+      .send({
+        donorName: 'Fred Flintstone',
+        amount: donationAmount,
+        currency: 'AUD',
+      });
+
+    // Get the updated total for the campaign profile
+    profile = await request(app).get(`/profiles/${campaignProfileId}`);
+    const updatedTotal = profile.body.total;
+
+    // Check that the updated total is correct
+    expect(updatedTotal).toEqual(initialTotal + donationAmount);
+  });
+
+  test(' should return an error if donation amount is invalid', async () => {
+    const res = await request(app)
+      .post('/donations')
+      .send({
+        donorName: 'Fred Flintstone',
+        amount: -1000,
+        currency: 'AUD',
+      });
+    expect(res.statusCode).toEqual(400);
+  });
+});
+
+describe('POST /profiles', () => {
+  test(' should create a new profile', async () => {
+    const res = await request(app)
+      .post('/profiles')
+      .send({
+        name: 'New Profile',
+        parentId: campaignProfileId,
+        currency: 'AUD',
+      });
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('id');
+  });
+
+  test(' should return an error if profile is invalid', async () => {
+    const res = await request(app)
+      .post('/profiles')
+      .send({
+        name: 'New Profile',
+        parentId: campaignProfileId,
+      });
+    expect(res.statusCode).toEqual(400);
+  });
+});
