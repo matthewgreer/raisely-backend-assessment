@@ -26,7 +26,7 @@ const getProfileDonations = async (profileId) => {
 
     return donations;
   } catch (error) {
-    return error;
+    throw error;
   }
 };
 
