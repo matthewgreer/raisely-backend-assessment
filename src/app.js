@@ -8,7 +8,7 @@ const port = process.env.PORT || 8080;
 setupMiddleware(app);
 
 // Setup routes
-const routes = require('./routes');
+const routes = require('./api/routes');
 app.use('/', routes);
 
 if (process.env.NODE_ENV !== 'test') {
