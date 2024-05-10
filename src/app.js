@@ -11,7 +11,7 @@ setupMiddleware(app);
 const routes = require('./api/routes');
 app.use('/', routes);
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'TEST') {
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
