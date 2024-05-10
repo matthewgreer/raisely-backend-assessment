@@ -1,5 +1,6 @@
-const DonationsModel = require('../../models/donation');
+const DonationModel = require('../../models/donation');
 const ProfileModel = require('../../models/profile');
+const CurrencyService = new (require('../../services/currency_service'));
 const { TransactionError } = require('../../utils/errors');
 
 const processDonation = async (donorName, amount, currency, profileId) => {
@@ -11,36 +12,62 @@ const processDonation = async (donorName, amount, currency, profileId) => {
   let pendingDonationId;
 
   try {
-    pendingDonationId = await DonationsModel.addPendingDonation(donorName, amount, currency, profileId);
+    pendingDonationId = await DonationModel.addPendingDonation(donorName, amount, currency, profileId);
+
+    const pendingProfileTotalUpdates = [];
+
+    // get profile and all parent profiles -- AVOID N+1 QUERIES, SIMULATE USE OF A SINGLE QUERY
+
+    const profileAndAncestors = await ProfileModel.getProfileAndAncestors(profileId);
+
+    console.log('profileAndAncestors:', profileAndAncestors, typeof profileAndAncestors);
+
+    profileAndAncestors.forEach((profile) => {
+      const convertedAmount = CurrencyService.convertAmount(amount, currency, profile.currency);
+
+      pendingProfileTotalUpdates.push({ profileId: profile.id, amount: convertedAmount });
+    });
+
+    ProfileModel.addPendingProfileTotalUpdates(pendingDonationId, pendingProfileTotalUpdates);
+
   } catch (error) {
     console.log('Error in Donations Controller processDonation pending:', error);
     throw error;
   }
 
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   // charge card here
   const chargeSuccessful = true;
-  // if charge is successful, move donation from pending to donations
+  // if charge is successful, move donation from pending to donations and profile updates to profiles
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   if (chargeSuccessful) {
     try {
-      await DonationsModel.finalizePendingDonation(pendingDonationId);
+      await DonationModel.finalizePendingDonation(pendingDonationId);
+      await ProfileModel.finalizeProfileUpdates(pendingDonationId)
+
     } catch (error) {
       console.log('Error in Donations Controller processDonation approval:', error);
       throw error;
     }
     try {
       const profile = await ProfileModel.getProfile(profileId);
-      await ProfileModel.updateProfileTotal(profileId, amount);
     } catch (error) {
       console.log('Error in Donations Controller processDonation update:', error);
       throw error;
     }
   } else {
-    // if charge is unsuccessful, remove donation from pending
+    // if charge is unsuccessful, remove donation and profile updates from their pending states
     try {
-      await DonationsModel.rollbackPendingDonation(pendingDonationId);
+      await DonationModel.rollbackPendingDonation(pendingDonationId);
+      await ProfileModel.rollbackProfileUpdates(pendingDonationId)
+
       // if rollback successful, we still want to throw an error to let the user know the transaction failed
-      console.log('Error in Donations Controller processDonation rollback success:', error)
-      throw new TransactionError('Transaction Failed! Charge was unsuccessful. Donation not saved.')
+
+      console.log('Error in Donations Controller processDonation rollback success:', error);
+      throw new TransactionError('Transaction Failed! Charge was unsuccessful. Donation not saved.');
     } catch (error) {
       // if rollback fails, we want to throw a different error
       console.log('Error in Donations Controller processDonation rollback failure:', error)
@@ -54,7 +81,7 @@ const getProfileDonations = async (profileId) => {
   try {
     // ensure profile exists, if not getProfile will throw an error
     const profile = await ProfileModel.getProfile(profileId);
-    const donations = await DonationsModel.getDonationsForProfile(profile.id);
+    const donations = await DonationModel.getDonationsForProfile(profile.id);
 
     return donations;
   } catch (error) {

@@ -1,20 +1,23 @@
-/* Data model for donations.
-  NB: This is a simple in-memory data store. In a real-world application, this would be replaced with a database. The store will not persist between server restarts.
-*/
 const { v4: uuidv4 } = require("uuid");
+const { NotFoundError, ValidationError } = require("../utils/errors");
 const { dbDelay } = require("../utils/helpers");
-const { validateDonation } = require("../utils/validators");
-const { ValidationError, NotFoundError } = require("../utils/errors");
 
 /**
+ * Data model for donations.
+ *
+ * NB: This is a simple in-memory data store. In a real-world application, this would be replaced with a database. The store will not persist between server restarts!
+ *
+ * I tend to favor OOP and encapsulation, and often prefer to use classes for data models. However, in this case, the models are so simplistic that I think it's fine to use functions. If the models were to grow in complexity, I would consider refactoring them into classes.
+ *
  * Donations have the following shape:
+ *
  * id - A unique identifier, UUID v4
  * donorName - The full name of the person making the donation
  * amount - The amount being donated, in cents
  * profileId - The profile the donation is made to
  * currency - The currency the donation is made in
  */
-let donations = [
+const donations = [
   {
     amount: 5000,
     currency: "AUD",
@@ -23,7 +26,6 @@ let donations = [
     profileId: "2ad19172-9683-407d-9732-8397d58ddcb2",
   }
 ]
-
 
 let pendingDonations = [];
 
@@ -39,7 +41,7 @@ const addPendingDonation = (donorName, amount, currency, profileId) => {
   console.log('Adding pending donation:', donation)
 
   try {
-    validateDonation(donation);
+    isValidDonation(donation);
   } catch (error) {
     console.log('Error in Donation Model addPendingDonation:', error)
     throw new ValidationError(error.message);
@@ -78,4 +80,32 @@ const rollbackPendingDonation = async (id) => {
   pendingDonations = pendingDonations.filter(donation => donation.id !== id);
 }
 
-module.exports = { addPendingDonation, finalizePendingDonation, getDonationsForProfile, rollbackPendingDonation};
+const isValidDonation = (donation) => {
+  const { donorName, amount, currency, profileId } = donation;
+  console.log("VALIDATING DONATION:",donation);
+
+  if (!donorName || !amount || !currency || !profileId) {
+    throw new ValidationError("Donation must include donorName, amount, currency, and profileId");
+  }
+
+  if (typeof donorName !== "string") {
+    throw new ValidationError("Donor name must be a string");
+  }
+
+  if (typeof amount !== "number") {
+    throw new ValidationError("Donation amount must be a number");
+  }
+
+  if (typeof currency !== "string") {
+    throw new ValidationError("Donation currency must be a string");
+  }
+
+  if (typeof profileId !== "string") {
+    throw new ValidationError("Donation profileId must be a UUID string");
+  }
+
+  console.log("DONATION VALIDATED");
+  return true;
+}
+
+module.exports = { addPendingDonation, finalizePendingDonation, getDonationsForProfile, isValidDonation, rollbackPendingDonation};
