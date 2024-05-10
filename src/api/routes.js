@@ -1,5 +1,5 @@
 const express = require('express');
-const { getProfiles } = require('../api/controllers/profiles_controller');
+const { getProfiles, getProfile } = require('../api/controllers/profiles_controller');
 const { processDonation, getProfileDonations } = require('../api/controllers/donations_controller');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 
@@ -14,6 +14,22 @@ router.get('/', (req, res) => {
 router.get('/profiles', async (req, res) => {
   const profiles = await getProfiles();
   res.json(profiles);
+});
+
+// Bonus! Get indiviual profile by ID
+router.get('/profiles/:profile', async (req, res) => {
+  try {
+    const profileId = req.params.profile;
+    const profile = await getProfile(profileId);
+    res.json(profile);
+  } catch (error) {
+    console.log('Error in Routes GET /profiles/:profile:', error);
+    if(error instanceof NotFoundError) {
+      res.status(error.statusCode).send(error.message);
+    } else {
+      res.status(500).send('Internal server error');
+    }
+  }
 });
 
 // Get all donations for a profile
@@ -48,5 +64,9 @@ router.post('/profiles/:profile/donations', async (req, res) => {
     }
   }
 });
+
+// TODO: Add a donation to the campaign profile POST /donations
+
+// TODO: Add a profile POST /profiles (bonus)
 
 module.exports = router;
