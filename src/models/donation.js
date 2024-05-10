@@ -2,6 +2,7 @@
   NB: This is a simple in-memory data store. In a real-world application, this would be replaced with a database. The store will not persist between server restarts.
 */
 const { v4: uuidv4 } = require("uuid");
+const { dbDelay } = require("../utils/helpers");
 const { validateDonation } = require("../utils/validators");
 const { ValidationError, NotFoundError } = require("../utils/errors");
 
@@ -24,19 +25,26 @@ let donations = [
 ]
 
 /**
- * @param {*} donation
+ * @param {string} donorName
+ * @param {number} amount
+ * @param {string} currency
+ * @param {string} profileId
  * @returns
  */
-const addDonation = (donation) => {
+const addDonation = (donorName, amount, currency, profileId) => {
+  const donation = { donorName, amount, currency, profileId };
+  if (!profileId) donation.profileId = campaignProfileId();
   // validate donation
   validateDonation(donation);
-
+  // charge card here
   donations.push(donation);
   return donation;
 };
 
-const getProfileDonations = (profileId) => {
-  // logic for getting donations for a profile
+const getDonationsForProfile = async (profileId) => {
+  await dbDelay();
+  const profileDonations = donations.filter(donation => donation.profileId === profileId);
+  return profileDonations; // we want to return an empty array if no donations are found rather than throw an error
 }
 
-module.exports = { addDonation, getProfileDonations };
+module.exports = { addDonation, getDonationsForProfile };

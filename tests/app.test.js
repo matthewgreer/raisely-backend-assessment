@@ -17,3 +17,11 @@ describe('GET /profiles', () => {
     expect(res.body).toBeInstanceOf(Array);
   });
 });
+
+describe('GET /profiles/:profile/donations', () => {
+  test(' should return all donations for a profile', async () => {
+    const res = await request(app).get('/profiles/2ad19172-9683-407d-9732-8397d58ddcb2/donations');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toBeInstanceOf(Array);
+  });
+});

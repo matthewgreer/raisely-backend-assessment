@@ -1,4 +1,5 @@
 const express = require('express');
+
 const setupMiddleware = (app) => {
   app.use(express.json()); // Parse JSON bodies
 
