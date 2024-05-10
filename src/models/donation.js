@@ -24,6 +24,9 @@ let donations = [
   }
 ]
 
+
+let pendingDonations = [];
+
 /**
  * @param {string} donorName
  * @param {number} amount
@@ -31,14 +34,20 @@ let donations = [
  * @param {string} profileId
  * @returns
  */
-const addDonation = (donorName, amount, currency, profileId) => {
+const addPendingDonation = (donorName, amount, currency, profileId) => {
   const donation = { donorName, amount, currency, profileId };
-  if (!profileId) donation.profileId = campaignProfileId();
-  // validate donation
-  validateDonation(donation);
-  // charge card here
-  donations.push(donation);
-  return donation;
+  console.log('Adding pending donation:', donation)
+
+  try {
+    validateDonation(donation);
+  } catch (error) {
+    console.log('Error in Donation Model addPendingDonation:', error)
+    throw new ValidationError(error.message);
+  }
+
+  donation.id = uuidv4();
+  pendingDonations.push(donation);
+  return donation.id;
 };
 
 const getDonationsForProfile = async (profileId) => {
@@ -47,4 +56,26 @@ const getDonationsForProfile = async (profileId) => {
   return profileDonations; // we want to return an empty array if no donations are found rather than throw an error
 }
 
-module.exports = { addDonation, getDonationsForProfile };
+const finalizePendingDonation = async (id) => {
+  await dbDelay();
+  const donation = pendingDonations.find(donation => donation.id === id);
+  if (!donation) {
+    console.log('Error in Donation Model finalizePendingDonation:', error)
+    throw new NotFoundError("Donation not found");
+  }
+  // move donation from pending to donations
+  pendingDonations = pendingDonations.filter(donation => donation.id !== id);
+  donations.push(donation);
+}
+
+const rollbackPendingDonation = async (id) => {
+  await dbDelay();
+  const donation = pendingDonations.find(donation => donation.id === id);
+  if (!donation) {
+    console.log('Error in Donation Model rollbackPendingDonation:', error)
+    throw new NotFoundError("Transaction Failed! Donation not found among pending donations. Donation not saved.");
+  }
+  pendingDonations = pendingDonations.filter(donation => donation.id !== id);
+}
+
+module.exports = { addPendingDonation, finalizePendingDonation, getDonationsForProfile, rollbackPendingDonation};

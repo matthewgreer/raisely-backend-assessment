@@ -1,20 +1,52 @@
 const DonationsModel = require('../../models/donation');
 const ProfileModel = require('../../models/profile');
+const { TransactionError } = require('../../utils/errors');
 
-const addDonation = async (donorName, amount, currency, profileId) => {
-  // if no profileId is provided, we need to find the campaign profileId. Now it would be most efficient to cache this value (in this case store it in a variable in the model). We can check to see if a cachedCampaignProfileId exists, but if not, we can fetch it from the database and re-cache it.
+const processDonation = async (donorName, amount, currency, profileId) => {
+  // if no profileId is provided, we need to find the campaign profileId.
   if (!profileId) {
-    if (!ProfileModel.cachedCampaignProfileId) {
-      const campaignProfile = await ProfilenModel.getCampaignProfileId();
-      profileId = campaignProfile.id;
-      ProfileModel.cachedCampaignProfileId = profileId;
-    } else {
-      profileId = ProfileModel.cachedCampaignProfileId;
-    }
+    profileId = ProfileModel.getCampaignProfileId();
   }
 
-  // add donation
-  const donation = await DonationsModel.addDonation(donorName, amount, currency, profileId);
+  let pendingDonationId;
+
+  try {
+    pendingDonationId = await DonationsModel.addPendingDonation(donorName, amount, currency, profileId);
+  } catch (error) {
+    console.log('Error in Donations Controller processDonation pending:', error);
+    throw error;
+  }
+
+  // charge card here
+  const chargeSuccessful = true;
+  // if charge is successful, move donation from pending to donations
+  if (chargeSuccessful) {
+    try {
+      await DonationsModel.finalizePendingDonation(pendingDonationId);
+    } catch (error) {
+      console.log('Error in Donations Controller processDonation approval:', error);
+      throw error;
+    }
+    try {
+      const profile = await ProfileModel.getProfile(profileId);
+      await ProfileModel.updateProfileTotal(profileId, amount);
+    } catch (error) {
+      console.log('Error in Donations Controller processDonation update:', error);
+      throw error;
+    }
+  } else {
+    // if charge is unsuccessful, remove donation from pending
+    try {
+      await DonationsModel.rollbackPendingDonation(pendingDonationId);
+      // if rollback successful, we still want to throw an error to let the user know the transaction failed
+      console.log('Error in Donations Controller processDonation rollback success:', error)
+      throw new TransactionError('Transaction Failed! Charge was unsuccessful. Donation not saved.')
+    } catch (error) {
+      // if rollback fails, we want to throw a different error
+      console.log('Error in Donations Controller processDonation rollback failure:', error)
+      throw error;
+    }
+  }
 };
 
 const getProfileDonations = async (profileId) => {
@@ -26,8 +58,9 @@ const getProfileDonations = async (profileId) => {
 
     return donations;
   } catch (error) {
+    console.log('Error in Donations Controller getProfileDonations:', error);
     throw error;
   }
 };
 
-module.exports = { addDonation, getProfileDonations };
+module.exports = { processDonation, getProfileDonations };

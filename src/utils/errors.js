@@ -6,6 +6,14 @@ class NotFoundError extends Error {
   }
 }
 
+class TransactionError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 400;
+    this.name = "TransactionError";
+  }
+}
+
 class ValidationError extends Error {
   constructor(message) {
     super(message);
@@ -16,5 +24,6 @@ class ValidationError extends Error {
 
 module.exports = {
   NotFoundError,
+  TransactionError,
   ValidationError
 };

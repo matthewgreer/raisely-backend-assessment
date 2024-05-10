@@ -43,20 +43,11 @@ let cachedCampaignProfileId = "78afca18-8162-4ed5-9a7b-212b98c9ec87";
  * @returns
  */
 const addProfile = async (name, parentId, currency) => {
-  // const profile = { name, parentId, currency };
-  // validate profile
-  // validateProfile(profile);
-
+  await dbDelay();
+  const profile = { name, parentId, currency };
   profile.id = uuidv4();
-  profile.total = 0;
-
-  return new Promise(resolve => {
-    const databaseDelay = setTimeout(() => {
-      profiles.push(profile);
-      resolve(profile);
-      clearTimeout(databaseDelay);
-    }, 100);  // simulating database write delay
-  });
+  profiles.push(profile);
+  return profile.id;
 };
 
 const getProfiles = async () => {
@@ -69,11 +60,26 @@ const getProfile = async (profileId) => {
   await dbDelay();
   const profile = profiles.find(profile => profile.id === profileId);
   if (!profile) {
+    console.log('Error in Profile Model getProfile: Profile not found')
     throw new NotFoundError(`Profile ${profileId} not found`);
   }
   return profile;
 };
 
-const getCampaignProfileId = () => profiles.find(profile => profile.parentId === null).id;
+const getCampaignProfileId = () => {
+  //It would be most efficient to cache this value (in this implementation, caching will mean storing it in a variable in the model). We can check to see if a cachedCampaignProfileId exists, but if not, we can fetch it from the database and re-cache it.
 
-module.exports = { addProfile, getProfiles, getProfile, getCampaignProfileId, cachedCampaignProfileId };
+  if (!cachedCampaignProfileId) {
+    const campaignProfileId = profiles.find(profile => profile.parentId === null).id;
+
+    if(!campaignProfileId) {
+      console.log('Error in Profile Model getCampaignProfileId: Campaign profile not found')
+      throw new NotFoundError('Uh oh! Campaign profile not found.');
+    }
+    // cache the campaign profile ID
+    cachedCampaignProfileId = campaignProfileId;
+  }
+  return cachedCampaignProfileId;
+};
+
+module.exports = { addProfile, getProfiles, getProfile, getCampaignProfileId };
