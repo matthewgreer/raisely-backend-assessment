@@ -1,5 +1,5 @@
 const ProfilesModel = require('../../models/profile');
-const CurrencyService = new (require('../../services/currency_service'));
+const CurrencyService = new (require('../../services/currency_service'))();
 
 /**
  *
@@ -27,7 +27,11 @@ const createProfile = async (profile) => {
     throw error;
   }
 
-  return ProfilesModel.createProfile(profile.name, profile.currency, profile.parentId);
+  return ProfilesModel.createProfile(
+    profile.name,
+    profile.currency,
+    profile.parentId,
+  );
 };
 
 /**
@@ -45,6 +49,6 @@ const getProfiles = async () => {
  */
 const getProfile = async (profileId) => {
   return ProfilesModel.getProfile(profileId);
-}
+};
 
 module.exports = { createProfile, getProfiles, getProfile };

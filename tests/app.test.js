@@ -4,7 +4,6 @@ const app = require('../src/app');
 const individualProfileId = '2ad19172-9683-407d-9732-8397d58ddcb2';
 const campaignProfileId = '78afca18-8162-4ed5-9a7b-212b98c9ec87';
 
-
 describe('GET /', () => {
   test(' should return welcome messge', async () => {
     const res = await request(app).get('/');
@@ -36,7 +35,9 @@ describe('GET /profiles/:profile', () => {
 
 describe('GET /profiles/:profile/donations', () => {
   test(' should return all donations for a profile', async () => {
-    const res = await request(app).get(`/profiles/${individualProfileId}/donations`);
+    const res = await request(app).get(
+      `/profiles/${individualProfileId}/donations`,
+    );
     expect(res.statusCode).toEqual(200);
     expect(res.body).toBeInstanceOf(Array);
   });
@@ -67,13 +68,11 @@ describe('POST /profiles/:profile/donations', () => {
 
     // Make a donation
     const donationAmount = 1000;
-    await request(app)
-      .post(`/profiles/${individualProfileId}/donations`)
-      .send({
-        donorName: 'Fred Flintstone',
-        amount: donationAmount,
-        currency: 'AUD',
-      });
+    await request(app).post(`/profiles/${individualProfileId}/donations`).send({
+      donorName: 'Fred Flintstone',
+      amount: donationAmount,
+      currency: 'AUD',
+    });
 
     // Get the updated total for the profile
     profile = await request(app).get(`/profiles/${individualProfileId}`);
@@ -85,31 +84,39 @@ describe('POST /profiles/:profile/donations', () => {
 
   test(' should accurately increase the campaign total when a donation is added to a child profile', async () => {
     // Get the initial totals for the profiles
-    const campaignProfile = await request(app).get(`/profiles/${campaignProfileId}`);
+    const campaignProfile = await request(app).get(
+      `/profiles/${campaignProfileId}`,
+    );
     const initialCampaignTotal = campaignProfile.body.total;
 
-    const individualProfile = await request(app).get(`/profiles/${individualProfileId}`);
+    const individualProfile = await request(app).get(
+      `/profiles/${individualProfileId}`,
+    );
     const initialIndividualTotal = individualProfile.body.total;
 
     // Make a donation
     const donationAmount = 1000;
-    await request(app)
-      .post(`/profiles/${individualProfileId}/donations`)
-      .send({
-        donorName: 'Fred Flintstone',
-        amount: donationAmount,
-        currency: 'AUD',
-      });
+    await request(app).post(`/profiles/${individualProfileId}/donations`).send({
+      donorName: 'Fred Flintstone',
+      amount: donationAmount,
+      currency: 'AUD',
+    });
 
     // Get the updated totals for the profiles
-    const newCampaignProfile = await request(app).get(`/profiles/${campaignProfileId}`);
+    const newCampaignProfile = await request(app).get(
+      `/profiles/${campaignProfileId}`,
+    );
     const updatedCampaignTotal = newCampaignProfile.body.total;
-    const newIndividualProfile = await request(app).get(`/profiles/${individualProfileId}`);
+    const newIndividualProfile = await request(app).get(
+      `/profiles/${individualProfileId}`,
+    );
     const updatedIndividualTotal = newIndividualProfile.body.total;
 
     // Check that the updated totals are correct
     expect(updatedCampaignTotal).toEqual(initialCampaignTotal + donationAmount);
-    expect(updatedIndividualTotal).toEqual(initialIndividualTotal + donationAmount);
+    expect(updatedIndividualTotal).toEqual(
+      initialIndividualTotal + donationAmount,
+    );
   });
 
   test(' should return an error if profile does not exist', async () => {
@@ -198,26 +205,22 @@ describe('POST /profiles/:profile/donations', () => {
   });
 
   test(' should return an error if profile id is missing from URL', async () => {
-    const res = await request(app)
-      .post(`/profiles/donations`)
-      .send({
-        donorName: 'Fred Flintstone',
-        amount: 1000,
-        currency: 'AUD',
-      });
+    const res = await request(app).post(`/profiles/donations`).send({
+      donorName: 'Fred Flintstone',
+      amount: 1000,
+      currency: 'AUD',
+    });
     expect(res.statusCode).toEqual(404);
   });
 });
 
 describe('POST /donations', () => {
   test(' should add a donation to the campaign profile', async () => {
-    const res = await request(app)
-      .post('/donations')
-      .send({
-        donorName: 'Fred Flintstone',
-        amount: 1000,
-        currency: 'AUD',
-      });
+    const res = await request(app).post('/donations').send({
+      donorName: 'Fred Flintstone',
+      amount: 1000,
+      currency: 'AUD',
+    });
     expect(res.statusCode).toEqual(200);
     expect(res.text).toBe('Donation added');
   });
@@ -229,13 +232,11 @@ describe('POST /donations', () => {
 
     // Make a donation
     const donationAmount = 1000;
-    await request(app)
-      .post('/donations')
-      .send({
-        donorName: 'Fred Flintstone',
-        amount: donationAmount,
-        currency: 'AUD',
-      });
+    await request(app).post('/donations').send({
+      donorName: 'Fred Flintstone',
+      amount: donationAmount,
+      currency: 'AUD',
+    });
 
     // Get the updated total for the campaign profile
     profile = await request(app).get(`/profiles/${campaignProfileId}`);
@@ -246,37 +247,31 @@ describe('POST /donations', () => {
   });
 
   test(' should return an error if donation amount is invalid', async () => {
-    const res = await request(app)
-      .post('/donations')
-      .send({
-        donorName: 'Fred Flintstone',
-        amount: -1000,
-        currency: 'AUD',
-      });
+    const res = await request(app).post('/donations').send({
+      donorName: 'Fred Flintstone',
+      amount: -1000,
+      currency: 'AUD',
+    });
     expect(res.statusCode).toEqual(400);
   });
 });
 
 describe('POST /profiles', () => {
   test(' should create a new profile', async () => {
-    const res = await request(app)
-      .post('/profiles')
-      .send({
-        name: 'New Profile',
-        parentId: campaignProfileId,
-        currency: 'AUD',
-      });
+    const res = await request(app).post('/profiles').send({
+      name: 'New Profile',
+      parentId: campaignProfileId,
+      currency: 'AUD',
+    });
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('id');
   });
 
   test(' should return an error if profile is invalid', async () => {
-    const res = await request(app)
-      .post('/profiles')
-      .send({
-        name: 'New Profile',
-        parentId: campaignProfileId,
-      });
+    const res = await request(app).post('/profiles').send({
+      name: 'New Profile',
+      parentId: campaignProfileId,
+    });
     expect(res.statusCode).toEqual(400);
   });
 });
