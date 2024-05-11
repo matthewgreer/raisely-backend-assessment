@@ -12,8 +12,10 @@ const routes = require('./api/routes');
 app.use('/', routes);
 
 // handle 404 errors for unknown routes
-app.use(function(req, res, next) {
-  res.status(404).json({ error: "Resource not found. Check the URL and try again." })
+app.use(function (req, res, next) {
+  res
+    .status(404)
+    .json({ error: 'Resource not found. Check the URL and try again.' });
 });
 
 if (process.env.NODE_ENV !== 'TEST') {
