@@ -1,5 +1,9 @@
-const { v4: uuidv4 } = require("uuid");
-const { NotFoundError, TransactionError, ValidationError } = require("../utils/errors");
+const { v4: uuidv4 } = require('uuid');
+const {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} = require('../utils/errors');
 const { dbDelay } = require('../utils/helpers');
 
 /**
@@ -21,19 +25,19 @@ const { dbDelay } = require('../utils/helpers');
  */
 const profiles = [
   {
-    currency: "AUD",
-    id: "78afca18-8162-4ed5-9a7b-212b98c9ec87",
-    name: "Campaign Profile",
+    currency: 'AUD',
+    id: '78afca18-8162-4ed5-9a7b-212b98c9ec87',
+    name: 'Campaign Profile',
     parentId: null,
     total: 5000, // includes the seeded donation
   },
   {
-    currency: "AUD",
-    id: "2ad19172-9683-407d-9732-8397d58ddcb2",
+    currency: 'AUD',
+    id: '2ad19172-9683-407d-9732-8397d58ddcb2',
     name: "Nick's Fundraising Profile",
-    parentId: "78afca18-8162-4ed5-9a7b-212b98c9ec87",
+    parentId: '78afca18-8162-4ed5-9a7b-212b98c9ec87',
     total: 5000, // includes the seeded donation
-  }
+  },
 ];
 
 /**
@@ -52,7 +56,7 @@ const pendingProfileTotalUpdates = {};
  *
  * Because it would be more efficient in a database-backed system for us to cache the root campaign profile ID, we will store it here. We can nullify it if we want to pretend the cache is invalidated or expired or something. Then we would simply fetch it from the database and re-cache it.
  */
-let cachedCampaignProfileId = "78afca18-8162-4ed5-9a7b-212b98c9ec87";
+let cachedCampaignProfileId = '78afca18-8162-4ed5-9a7b-212b98c9ec87';
 
 /**
  * Add a new profile
@@ -70,13 +74,14 @@ const createProfile = async (name, currency, parentId) => {
   profile.id = uuidv4();
   profile.total = 0;
   profiles.push(profile);
-  
   try {
     isValidProfile(profile);
 
     return profile;
   } catch {
-    throw new ValidationError(`Internal error. Profile for ${profile.name} not created.`)
+    throw new ValidationError(
+      `Internal error. Profile for ${profile.name} not created.`,
+    );
   }
 };
 
@@ -100,9 +105,8 @@ const getProfiles = async () => {
  */
 const getProfile = async (profileId) => {
   await dbDelay();
-  const profile = profiles.find(profile => profile.id === profileId);
+  const profile = profiles.find((profile) => profile.id === profileId);
   if (!profile) {
-    console.log('Error in Profile Model getProfile: Profile not found')
     throw new NotFoundError(`Profile ${profileId} not found`);
   }
   return profile;
@@ -117,10 +121,11 @@ const getProfile = async (profileId) => {
 const getCampaignProfileId = () => {
   // if we have a cached campaign profile ID, return it. Otherwise, find it and cache it, then return it.
   if (!cachedCampaignProfileId) {
-    const campaignProfileId = profiles.find(profile => profile.parentId === null).id;
+    const campaignProfileId = profiles.find(
+      (profile) => profile.parentId === null,
+    ).id;
 
-    if(!campaignProfileId) {
-      console.log('Error in Profile Model getCampaignProfileId: Campaign profile not found')
+    if (!campaignProfileId) {
       throw new NotFoundError('Uh oh! Campaign profile not found.');
     }
     // cache the campaign profile ID
@@ -168,25 +173,25 @@ const getProfileAndAncestors = async (profileId) => {
  */
 const isValidProfile = (profile) => {
   const { name, currency, parentId } = profile;
-  console.log("VALIDATING PROFILE:",profile);
 
   if (!name || !parentId || !currency) {
-    throw new ValidationError("Profile must include name, parentId, and currency");
+    throw new ValidationError(
+      'Profile must include name, parentId, and currency',
+    );
   }
 
-  if (typeof name !== "string") {
-    throw new ValidationError("Profile name must be a string");
+  if (typeof name !== 'string') {
+    throw new ValidationError('Profile name must be a string');
   }
 
-  if (typeof parentId !== "string") {
-    throw new ValidationError("Profile parentId must be a UUID string");
+  if (typeof parentId !== 'string') {
+    throw new ValidationError('Profile parentId must be a UUID string');
   }
 
   if (parentId !== null && !profiles.find((parent) => parent.id === parentId)) {
     throw new ValidationError(`Parent profile ${parent.id} not found`);
   }
 
-  console.log("PROFILE VALIDATED");
   return true;
 };
 
@@ -202,8 +207,7 @@ const addPendingProfileTotalUpdates = async (donationID, updates) => {
   try {
     pendingProfileTotalUpdates[donationID] = updates;
   } catch (error) {
-    console.log('Error in Profile Model addPendingProfileTotalUpdates:', error);
-    throw new TransactionError("Error adding pending profile total update");
+    throw new TransactionError('Error adding pending profile total update');
   }
 };
 
@@ -217,19 +221,19 @@ const finalizeProfileUpdates = async (pendingDonationId) => {
   await dbDelay();
   const approvedUpdates = pendingProfileTotalUpdates[pendingDonationId];
   if (!approvedUpdates) {
-    console.log('Error in Profile Model finalizeProfileUpdates:', error);
-    throw new NotFoundError(`Pending profile updates for donation ${pendingDonationId} not found`);
+    throw new NotFoundError(
+      `Pending profile updates for donation ${pendingDonationId} not found`,
+    );
   }
 
   try {
     // remove the pending updates
     pendingProfileTotalUpdates[pendingDonationId] = null;
 
-    approvedUpdates.forEach(update => {
+    approvedUpdates.forEach((update) => {
       updateProfileTotal(update.profileId, update.amount);
     });
   } catch (error) {
-    console.log('Error in Profile Model finalizeProfileUpdates:', error);
     throw error;
   }
 };
@@ -244,17 +248,15 @@ const finalizeProfileUpdates = async (pendingDonationId) => {
  */
 const updateProfileTotal = async (profileId, amount) => {
   await dbDelay();
-  const profile = profiles.find(profile => profile.id === profileId);
+  const profile = profiles.find((profile) => profile.id === profileId);
   if (!profile) {
-    console.log('Error in Profile Model updateProfileTotal:', error);
-    throw new NotFoundError("Profile not found");
+    throw new NotFoundError('Profile not found');
   }
 
   try {
     profile.total += amount;
   } catch (error) {
-    console.log('Error in Profile Model updateProfileTotal:', error);
-    throw new TransactionError("Error updating profile total");
+    throw new TransactionError('Error updating profile total');
   }
 };
 
@@ -267,18 +269,32 @@ const updateProfileTotal = async (profileId, amount) => {
  */
 const rollbackProfileUpdates = async (pendingDonationId) => {
   await dbDelay();
-  const pendingUpdates = pendingProfileTotalUpdates.find(update => update.donationId === pendingDonationId);
+  const pendingUpdates = pendingProfileTotalUpdates.find(
+    (update) => update.donationId === pendingDonationId,
+  );
   if (!pendingUpdates) {
-    console.log('Error in Profile Model rollbackProfileUpdates:', error);
-    throw new NotFoundError("Pending profile updates not found");
+    throw new NotFoundError('Pending profile updates not found');
   }
 
   try {
-    pendingProfileTotalUpdates = pendingProfileTotalUpdates.filter(update => update.donationId !== pendingDonationId);
+    pendingProfileTotalUpdates = pendingProfileTotalUpdates.filter(
+      (update) => update.donationId !== pendingDonationId,
+    );
   } catch (error) {
-    console.log('Error in Profile Model rollbackProfileUpdates:', error);
-    throw new TransactionError(`Error rolling back profile updates for donation ${pendingDonationId}`);
+    throw new TransactionError(
+      `Error rolling back profile updates for donation ${pendingDonationId}`,
+    );
   }
 };
 
-module.exports = { createProfile, getProfiles, getProfile, getCampaignProfileId, isValidProfile, addPendingProfileTotalUpdates, finalizeProfileUpdates, rollbackProfileUpdates, getProfileAndAncestors};
+module.exports = {
+  createProfile,
+  getProfiles,
+  getProfile,
+  getCampaignProfileId,
+  isValidProfile,
+  addPendingProfileTotalUpdates,
+  finalizeProfileUpdates,
+  rollbackProfileUpdates,
+  getProfileAndAncestors,
+};

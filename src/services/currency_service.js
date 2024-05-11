@@ -21,7 +21,7 @@ class CurrencyService {
         symbol: 'A$',
         exchangeRate: 0.74,
       },
-    }
+    };
   }
 
   validCurrencies() {
@@ -29,20 +29,20 @@ class CurrencyService {
   }
 
   isValidCurrency(currency) {
-    console.log("VALIDATING CURRENCY:", currency);
     if (!currency) {
-      throw new ValidationError("Currency is required");
+      throw new ValidationError('Currency is required');
     }
 
-    if (typeof currency !== "string") {
-      throw new ValidationError("Currency must be a string");
+    if (typeof currency !== 'string') {
+      throw new ValidationError('Currency must be a string');
     }
 
     if (!this.currencies[currency]) {
-      throw new ValidationError(`Invalid currency: ${currency}. This service only supports ${this.validCurrencies().join(", ")}`);
+      throw new ValidationError(
+        `Invalid currency: ${currency}. This service only supports ${this.validCurrencies().join(', ')}`,
+      );
     }
 
-    console.log("CURRENCY VALIDATED");
     return true;
   }
 
@@ -50,7 +50,10 @@ class CurrencyService {
     if (fromCurrency === toCurrency) {
       return 1;
     }
-    return this.currencies[fromCurrency].exchangeRate / this.currencies[toCurrency].exchangeRate;
+    return (
+      this.currencies[fromCurrency].exchangeRate /
+      this.currencies[toCurrency].exchangeRate
+    );
   }
 
   convertAmount(amount, fromCurrency, toCurrency) {
@@ -60,7 +63,6 @@ class CurrencyService {
     const exchangeRate = this.getExchangeRate(fromCurrency, toCurrency);
     return Math.floor(amount * exchangeRate);
   }
-
 }
 
 module.exports = CurrencyService;
