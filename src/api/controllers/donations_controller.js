@@ -24,8 +24,6 @@ const processDonation = async (donorName, amount, currency, profileId) => {
 
     const profileAndAncestors = await ProfileModel.getProfileAndAncestors(profileId);
 
-    console.log('profileAndAncestors:', profileAndAncestors, typeof profileAndAncestors);
-
     profileAndAncestors.forEach((profile) => {
       const convertedAmount = CurrencyService.convertAmount(amount, currency, profile.currency);
 
@@ -35,7 +33,6 @@ const processDonation = async (donorName, amount, currency, profileId) => {
     ProfileModel.addPendingProfileTotalUpdates(pendingDonationId, pendingProfileTotalUpdates);
 
   } catch (error) {
-    console.log('Error in Donations Controller processDonation pending:', error);
     throw error;
   }
 
@@ -53,13 +50,11 @@ const processDonation = async (donorName, amount, currency, profileId) => {
       await ProfileModel.finalizeProfileUpdates(pendingDonationId)
 
     } catch (error) {
-      console.log('Error in Donations Controller processDonation approval:', error);
       throw error;
     }
     try {
       const profile = await ProfileModel.getProfile(profileId);
     } catch (error) {
-      console.log('Error in Donations Controller processDonation update:', error);
       throw error;
     }
   } else {
@@ -69,12 +64,9 @@ const processDonation = async (donorName, amount, currency, profileId) => {
       await ProfileModel.rollbackProfileUpdates(pendingDonationId)
 
       // if rollback successful, we still want to throw an error to let the user know the transaction failed
-
-      console.log('Error in Donations Controller processDonation rollback success:', error);
       throw new TransactionError('Transaction Failed! Charge was unsuccessful. Donation not saved.');
     } catch (error) {
       // if rollback fails, we want to throw a different error
-      console.log('Error in Donations Controller processDonation rollback failure:', error)
       throw error;
     }
   }
@@ -89,7 +81,6 @@ const getProfileDonations = async (profileId) => {
 
     return donations;
   } catch (error) {
-    console.log('Error in Donations Controller getProfileDonations:', error);
     throw error;
   }
 };

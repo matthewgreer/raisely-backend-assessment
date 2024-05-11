@@ -23,7 +23,6 @@ router.get('/profiles/:profile', async (req, res) => {
     const profile = await getProfile(profileId);
     res.json(profile);
   } catch (error) {
-    console.log('Error in Routes GET /profiles/:profile:', error);
     if(error instanceof NotFoundError) {
       res.status(error.statusCode).send(error.message);
     } else {
@@ -39,7 +38,6 @@ router.get('/profiles/:profile/donations', async (req, res) => {
     const donations = await getProfileDonations(profileId);
     res.json(donations);
   } catch (error) {
-    console.log('Error in Routes GET /profiles/:profile/donations:', error);
     if(error instanceof NotFoundError || error instanceof ValidationError) {
       res.status(error.statusCode).send(error.message);
     } else {
@@ -56,7 +54,6 @@ router.post('/profiles/:profile/donations', async (req, res) => {
     await processDonation(donorName, amount, currency, profileId);
     res.status(200).send('Donation added');
   } catch (error) {
-    console.log('Error in Routes POST /profiles/:profile/donations:', error);
     if(error instanceof NotFoundError || error instanceof ValidationError) {
       res.status(error.statusCode).send(error.message);
     } else {
@@ -72,7 +69,6 @@ router.post('/donations', async (req, res) => {
     await processDonation(donorName, amount, currency);
     res.status(200).send('Donation added');
   } catch (error) {
-    console.log('Error in Routes POST /donations:', error);
     if(error instanceof NotFoundError || error instanceof ValidationError) {
       res.status(error.statusCode).send(error.message);
     } else {
@@ -88,7 +84,6 @@ router.post('/profiles', async (req, res) => {
     const profile = await createProfile({ name, currency, parentId });
     res.json(profile);
   } catch (error) {
-    console.log('Error in Routes POST /profiles:', error);
     if(error instanceof ValidationError) {
       res.status(error.statusCode).send(error.message);
     } else {

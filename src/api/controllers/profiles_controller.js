@@ -14,7 +14,6 @@ const createProfile = async (profile) => {
     try {
       profile.parentId = ProfilesModel.getCampaignProfileId();
     } catch (error) {
-      console.log('Error in Profiles Controller createProfile getCampaignProfileId:', error);
       throw error;
     }
   }
@@ -25,7 +24,6 @@ const createProfile = async (profile) => {
 
     await ProfilesModel.isValidProfile(profile);
   } catch (error) {
-    console.log('Error in Profiles Controller createProfile validation:', error);
     throw error;
   }
 

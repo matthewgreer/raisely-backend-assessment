@@ -29,7 +29,6 @@ class CurrencyService {
   }
 
   isValidCurrency(currency) {
-    console.log("VALIDATING CURRENCY:", currency);
     if (!currency) {
       throw new ValidationError("Currency is required");
     }
@@ -42,7 +41,6 @@ class CurrencyService {
       throw new ValidationError(`Invalid currency: ${currency}. This service only supports ${this.validCurrencies().join(", ")}`);
     }
 
-    console.log("CURRENCY VALIDATED");
     return true;
   }
 

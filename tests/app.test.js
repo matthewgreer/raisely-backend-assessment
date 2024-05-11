@@ -63,7 +63,6 @@ describe('POST /profiles/:profile/donations', () => {
   test(' should accurately increase the profile total when a donation is added', async () => {
     // Get the initial total for the profile
     let profile = await request(app).get(`/profiles/${individualProfileId}`);
-    console.log('initial profile', profile.body);
     const initialTotal = profile.body.total;
 
     // Make a donation
@@ -78,7 +77,6 @@ describe('POST /profiles/:profile/donations', () => {
 
     // Get the updated total for the profile
     profile = await request(app).get(`/profiles/${individualProfileId}`);
-    console.log('updated profile', profile.body);
     const updatedTotal = profile.body.total;
 
     // Check that the updated total is correct

@@ -38,11 +38,9 @@ let pendingDonations = [];
  */
 const addPendingDonation = (donorName, amount, currency, profileId) => {
   const donation = { donorName, amount, currency, profileId };
-  console.log('Adding pending donation:', donation)
-
   donation.id = uuidv4();
   pendingDonations.push(donation);
-  
+
   return donation.id;
 };
 
@@ -56,7 +54,6 @@ const finalizePendingDonation = async (id) => {
   await dbDelay();
   const donation = pendingDonations.find(donation => donation.id === id);
   if (!donation) {
-    console.log('Error in Donation Model finalizePendingDonation:', error)
     throw new NotFoundError("Donation not found");
   }
   // move donation from pending to donations
@@ -68,7 +65,6 @@ const rollbackPendingDonation = async (id) => {
   await dbDelay();
   const donation = pendingDonations.find(donation => donation.id === id);
   if (!donation) {
-    console.log('Error in Donation Model rollbackPendingDonation:', error)
     throw new NotFoundError("Transaction Failed! Donation not found among pending donations. Donation not saved.");
   }
   pendingDonations = pendingDonations.filter(donation => donation.id !== id);
@@ -76,7 +72,6 @@ const rollbackPendingDonation = async (id) => {
 
 const isValidDonation = (donation) => {
   const { donorName, amount, currency, profileId } = donation;
-  console.log("VALIDATING DONATION:",donation);
 
   if (!donorName || !amount || !currency || !profileId) {
     throw new ValidationError("Donation must include donorName, amount, currency, and profileId");
@@ -102,7 +97,6 @@ const isValidDonation = (donation) => {
     throw new ValidationError("Donation profileId must be a UUID string");
   }
 
-  console.log("DONATION VALIDATED");
   return true;
 }
 
