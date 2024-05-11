@@ -68,8 +68,16 @@ const createProfile = async (name, currency, parentId) => {
   await dbDelay();
   const profile = { name, currency, parentId };
   profile.id = uuidv4();
+  profile.total = 0;
   profiles.push(profile);
-  return profile;
+  
+  try {
+    isValidProfile(profile);
+
+    return profile;
+  } catch {
+    throw new ValidationError(`Internal error. Profile for ${profile.name} not created.`)
+  }
 };
 
 /**
