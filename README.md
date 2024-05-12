@@ -4,7 +4,8 @@ Repo for Back-End Assessment Exercise During Raisely Interview Process
 
 - [NodeJS](https://nodejs.org/en/download)
 - `npm i` to install dependencies
-- `npm run start` start server on http://localhost:8080
+- `npm start` start server on http://localhost:8080
+- `npm test` run tests
 
 ## Task
 
