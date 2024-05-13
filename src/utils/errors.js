@@ -1,3 +1,13 @@
+const CUSTOM_ERRORS = [
+  'NotFoundError',
+  'TransactionError',
+  'ValidationError',
+]
+
+const isCustomError = (error) => {
+  return CUSTOM_ERRORS.includes(error.name);
+}
+
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
@@ -23,6 +33,7 @@ class ValidationError extends Error {
 }
 
 module.exports = {
+  isCustomError,
   NotFoundError,
   TransactionError,
   ValidationError,

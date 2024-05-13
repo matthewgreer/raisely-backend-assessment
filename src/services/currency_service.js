@@ -24,10 +24,22 @@ class CurrencyService {
     };
   }
 
+  /**
+   * Get an array of valid currencies
+   *
+   * @returns {Array} An array of valid currencies
+   */
   validCurrencies() {
     return Object.keys(this.currencies);
   }
 
+  /**
+   * Check if a currency is valid
+   *
+   * @param {string} currency
+   * @returns {boolean} true if currency is valid
+   * @throws {ValidationError} if currency is invalid
+   */
   isValidCurrency(currency) {
     if (!currency) {
       throw new ValidationError('Currency is required');
@@ -46,6 +58,12 @@ class CurrencyService {
     return true;
   }
 
+  /**
+   *
+   * @param {String} fromCurrency
+   * @param {String} toCurrency
+   * @returns {Number} the exchange rate
+   */
   getExchangeRate(fromCurrency, toCurrency) {
     if (fromCurrency === toCurrency) {
       return 1;
@@ -56,6 +74,13 @@ class CurrencyService {
     );
   }
 
+  /**
+   *
+   * @param {Number} amount
+   * @param {String} fromCurrency
+   * @param {String} toCurrency
+   * @returns {Number} the converted amount
+   */
   convertAmount(amount, fromCurrency, toCurrency) {
     if (fromCurrency === toCurrency) {
       return amount;
