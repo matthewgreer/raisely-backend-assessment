@@ -53,7 +53,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post(`/profiles/${individualProfileId}/donations`)
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         amount: 1000,
         currency: 'AUD',
       });
@@ -69,7 +69,7 @@ describe('POST /profiles/:profile/donations', () => {
     // Make a donation
     const donationAmount = 1000;
     await request(app).post(`/profiles/${individualProfileId}/donations`).send({
-      donorName: 'Fred Flintstone',
+      donorName: 'Judith Neilson',
       amount: donationAmount,
       currency: 'AUD',
     });
@@ -97,7 +97,7 @@ describe('POST /profiles/:profile/donations', () => {
     // Make a donation
     const donationAmount = 1000;
     await request(app).post(`/profiles/${individualProfileId}/donations`).send({
-      donorName: 'Fred Flintstone',
+      donorName: 'Judith Neilson',
       amount: donationAmount,
       currency: 'AUD',
     });
@@ -123,7 +123,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post('/profiles/im-the-wrong-id/donations')
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         amount: 1000,
         currency: 'AUD',
       });
@@ -134,7 +134,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post(`/profiles/${individualProfileId}/donations`)
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         amount: -1000,
         currency: 'AUD',
       });
@@ -145,7 +145,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post(`/profiles/${individualProfileId}/donations`)
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         amount: 1000,
         currency: 'XYZ',
       });
@@ -156,7 +156,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post(`/profiles/${individualProfileId}/donations`)
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         amount: 1000,
       });
     expect(res.statusCode).toEqual(400);
@@ -176,7 +176,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post(`/profiles/${individualProfileId}/donations`)
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         currency: 'AUD',
       });
     expect(res.statusCode).toEqual(400);
@@ -186,7 +186,7 @@ describe('POST /profiles/:profile/donations', () => {
     const res = await request(app)
       .post(`/profiles/${individualProfileId}/donations`)
       .send({
-        donorName: 'Fred Flintstone',
+        donorName: 'Judith Neilson',
         amount: '1000',
         currency: 'AUD',
       });
@@ -206,7 +206,7 @@ describe('POST /profiles/:profile/donations', () => {
 
   test(' should return an error if profile id is missing from URL', async () => {
     const res = await request(app).post(`/profiles/donations`).send({
-      donorName: 'Fred Flintstone',
+      donorName: 'Judith Neilson',
       amount: 1000,
       currency: 'AUD',
     });
@@ -217,7 +217,7 @@ describe('POST /profiles/:profile/donations', () => {
 describe('POST /donations', () => {
   test(' should add a donation to the campaign profile', async () => {
     const res = await request(app).post('/donations').send({
-      donorName: 'Fred Flintstone',
+      donorName: 'Judith Neilson',
       amount: 1000,
       currency: 'AUD',
     });
@@ -233,7 +233,7 @@ describe('POST /donations', () => {
     // Make a donation
     const donationAmount = 1000;
     await request(app).post('/donations').send({
-      donorName: 'Fred Flintstone',
+      donorName: 'Judith Neilson',
       amount: donationAmount,
       currency: 'AUD',
     });
@@ -248,7 +248,7 @@ describe('POST /donations', () => {
 
   test(' should return an error if donation amount is invalid', async () => {
     const res = await request(app).post('/donations').send({
-      donorName: 'Fred Flintstone',
+      donorName: 'Judith Neilson',
       amount: -1000,
       currency: 'AUD',
     });

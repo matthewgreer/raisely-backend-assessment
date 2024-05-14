@@ -61,51 +61,38 @@ let cachedCampaignProfileId = '78afca18-8162-4ed5-9a7b-212b98c9ec87';
 /**
  * Add a new profile
  *
- * Technically, I wasn't asked to provide an createProfile endpoint, but it will be useful to have more than two hierarchical profiles, no?
- *
- * @param {string} name
- * @param {string} parentId
- * @param {string} currency
- * @returns {string} The id of the newly created profile
+ * @param {String} name
+ * @param {String} parentId
+ * @param {String} currency
+ * @returns {Object} The newly created profile
+ * @throws {ValidationError} If the profile is invalid
  */
 const createProfile = async (name, currency, parentId) => {
-  await dbDelay();
   const profile = { name, currency, parentId };
   profile.id = uuidv4();
   profile.total = 0;
+
+  await dbDelay(); // simulate db write delay
   profiles.push(profile);
 
   try {
     isValidProfile(profile);
 
     return profile;
-  } catch {
-    throw new ValidationError(
-      `Internal error. Profile for ${profile.name} not created.`,
-    );
+  } catch (error) {
+    throw error;
   }
-};
-
-/**
- * Get all profiles
- *
- * @returns {Array} An array of all profiles
- */
-const getProfiles = async () => {
-  // in a database-backed application, we would make an asynchronous query to fetch profiles. We simulate this with a delay here. We would also handle errors, retries, and possibly pagination depending on the implementation.
-  await dbDelay();
-  return profiles;
 };
 
 /**
  * Get a profile by ID
  *
- * @param {string} profileId
+ * @param {String} profileId
  * @returns {Object} The profile
  * @throws {NotFoundError} If the profile is not found
  */
 const getProfile = async (profileId) => {
-  await dbDelay();
+  await dbDelay(); // simulate db fetching profile
   const profile = profiles.find((profile) => profile.id === profileId);
   if (!profile) {
     throw new NotFoundError(`Profile ${profileId} not found`);
@@ -114,9 +101,23 @@ const getProfile = async (profileId) => {
 };
 
 /**
+ * Get all profiles
+ *
+ * @returns {Array} An array of all profiles
+ */
+const getProfiles = async () => {
+  // in a database-backed application, we would make an asynchronous query to fetch profiles. We simulate this with a delay here. We would also handle db errors, retries... possibly pagination depending on the implementation.
+  await dbDelay(); // simulate db fetching profiles
+  if (!profiles) {
+    throw new NotFoundError('No profiles found'); // I think there always needs to be a campaign profile
+  }
+  return profiles;
+};
+
+/**
  * Get the ID of the campaign profile
  *
- * @returns {string} The ID of the campaign profile
+ * @returns {String} The ID of the campaign profile
  * @throws {NotFoundError} If the campaign profile is not found
  */
 const getCampaignProfileId = () => {
@@ -143,7 +144,7 @@ const getCampaignProfileId = () => {
  * @throws {NotFoundError} If the profile or any of its ancestors are not found
  */
 const getProfileAndAncestors = async (profileId) => {
-  await dbDelay();
+  await dbDelay(); // simulate db query delay
   const profileAndAncestors = [];
   let currentProfile;
 
@@ -201,10 +202,11 @@ const isValidProfile = (profile) => {
  *
  * @param {String} donationId
  * @param {Array} updates
+ * @returns
  * @throws {TransactionError} If the update fails
  */
 const addPendingProfileTotalUpdates = async (donationID, updates) => {
-  await dbDelay();
+  await dbDelay(); // simulate db query delay
   try {
     pendingProfileTotalUpdates[donationID] = updates;
   } catch (error) {
@@ -216,10 +218,11 @@ const addPendingProfileTotalUpdates = async (donationID, updates) => {
  * Move pending profile updates to profiles
  *
  * @param {string} pendingDonationId
+ * @returns
  * @throws {TransactionError} If the updates fail
  */
 const finalizeProfileUpdates = async (pendingDonationId) => {
-  await dbDelay();
+  await dbDelay(); // simulate db query delay
   const approvedUpdates = pendingProfileTotalUpdates[pendingDonationId];
   if (!approvedUpdates) {
     throw new NotFoundError(
@@ -248,14 +251,15 @@ const finalizeProfileUpdates = async (pendingDonationId) => {
  * @throws {TransactionError} If the update fails
  */
 const updateProfileTotal = async (profileId, amount) => {
-  await dbDelay();
+  await dbDelay(); // simulate db query delay
   const profile = profiles.find((profile) => profile.id === profileId);
   if (!profile) {
     throw new NotFoundError('Profile not found');
   }
 
   try {
-    profile.total += amount;
+    profile.total += amount; // this won't error in our simple model, but in a real system, we would want to handle
+    await dbDelay(); // simulate db write delay
   } catch (error) {
     throw new TransactionError('Error updating profile total');
   }
@@ -269,12 +273,12 @@ const updateProfileTotal = async (profileId, amount) => {
  * @throws {TransactionError} If the rollback fails
  */
 const rollbackProfileUpdates = async (pendingDonationId) => {
-  await dbDelay();
+  await dbDelay(); // simulate db query delay
   const pendingUpdates = pendingProfileTotalUpdates.find(
     (update) => update.donationId === pendingDonationId,
   );
   if (!pendingUpdates) {
-    throw new NotFoundError('Pending profile updates not found');
+    throw new NotFoundError(`Pending profile updates for transaction ${pendingDonationId} not found!`);
   }
 
   try {

@@ -2,15 +2,18 @@ const ProfilesModel = require('../../models/profile');
 const CurrencyService = new (require('../../services/currency_service'))();
 
 /**
+ * Create a new profile
  *
  * @param {Object} profile
- * @returns
+ * @returns {Object} the created profile
+ * @throws {Error} if profile is invalid or if there is an error creating the profile
  */
 const createProfile = async (profile) => {
   const { name, currency, parentId } = profile;
 
   if (!parentId) {
-    // if no parentId is provided, we need to find the campaign profileId (or should it be mandatory?)
+    // if no parentId is provided, we find and use the campaign profileId
+    // ??? or should passing a parentId be mandatory ???
     try {
       profile.parentId = ProfilesModel.getCampaignProfileId();
     } catch (error) {
@@ -35,20 +38,32 @@ const createProfile = async (profile) => {
 };
 
 /**
+ * Get a specific profile by ID
  *
- * @returns
+ * @param {String} profileId
+ * @returns {Object} the profile
+ * @throws {Error} if there is an error getting the profile
  */
-const getProfiles = async () => {
-  return ProfilesModel.getProfiles();
+const getProfile = async (profileId) => {
+  try {
+    return ProfilesModel.getProfile(profileId);
+  } catch (error) {
+    throw error;
+  }
 };
 
 /**
+ * Get all profiles
  *
- * @param {String} profileId
- * @returns
+ * @returns {Array} an array of all profiles, or an empty array if no profiles are found
+ * @throws {Error} if there is an error getting the profiles, though since we're using a mock data store, this should never happen
  */
-const getProfile = async (profileId) => {
-  return ProfilesModel.getProfile(profileId);
+const getProfiles = async () => {
+  try {
+    return ProfilesModel.getProfiles();
+  } catch (error) {
+    throw error;
+  }
 };
 
 module.exports = { createProfile, getProfiles, getProfile };
